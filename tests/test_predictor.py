@@ -118,7 +118,7 @@ class TestSatisfactionPredictor:
 
         incomplete_data = {"duration": 100}  # Missing other features
 
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             self.predictor.predict(incomplete_data)
 
     def test_predict_invalid_service_class(self):
