@@ -36,7 +36,7 @@
     }
   },
   "overrideCommand": false,
-  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode && sudo chown -R vscode:vscode /workspaces && bash -lc 'export PATH=/root/.local/bin:/root/.cargo/bin:$PATH && uv --version && uv sync --extra dev'",
+  "postCreateCommand": "bash -lc 'export PATH=/root/.local/bin:/root/.cargo/bin:$PATH && uv --version && uv sync --extra dev'",
   "remoteUser": "vscode",
   
   "mounts": [
