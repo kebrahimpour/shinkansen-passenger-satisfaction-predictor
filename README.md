@@ -36,6 +36,53 @@ This project was created for the Shinkansen Travel Experience hackathon competit
 - **Model Deployment**: FastAPI (for API endpoints)
 - **Development Tools**: pytest, black, flake8
 
+## 🧪 Tested Environments
+
+This project is continuously tested against the following environments:
+
+| Python Version | OS | Status |
+|---------------|----|---------|
+| 3.10 | Ubuntu Latest | ✅ Supported |
+| 3.11 | Ubuntu Latest | ✅ Supported |
+| 3.12 | Ubuntu Latest | ✅ Supported |
+
+### CI/CD Pipeline
+
+Our continuous integration includes:
+- **Linting**: Code quality checks with flake8, ruff, and black
+- **Testing**: Comprehensive test suite with pytest and coverage reporting
+- **Pre-commit Hooks**: Automated code formatting and quality checks
+- **Multi-version Testing**: Ensuring compatibility across Python versions
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Whether you're fixing bugs, adding features, improving documentation, or enhancing tests, your help is appreciated.
+
+### Quick Start for Contributors
+
+1. **Fork the repository** and clone your fork
+2. **Install dependencies** with `uv sync --dev`
+3. **Set up pre-commit** with `uv run pre-commit install`
+4. **Run tests** with `uv run pytest tests/`
+5. **Make your changes** and create a pull request
+
+### Contribution Guidelines
+
+Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for detailed information on:
+- Development setup and workflow
+- Testing requirements and guidelines
+- Code style and quality standards
+- Pull request process
+- Areas where we need help
+
+### Areas We Need Help With
+
+- 🧠 **Model Improvements**: Better algorithms and feature engineering
+- 🧪 **Testing**: Expanding test coverage and adding edge cases
+- 📖 **Documentation**: Improving guides and adding examples
+- ⚡ **Performance**: Optimizing prediction speed and memory usage
+- 🔄 **CI/CD**: Enhancing build pipeline and deployment automation
+
 ---
 
-*Ready for PR creation*
+*Ready for community contributions! 🚅✨*
