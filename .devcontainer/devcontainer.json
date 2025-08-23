@@ -13,10 +13,7 @@
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
       "installOhMyZsh": true,
-      "upgradePackages": true,
-      "username": "vscode",
-      "uid": "1000",
-      "gid": "1000"
+      "upgradePackages": true
     }
   },
   "customizations": {
@@ -36,9 +33,5 @@
     }
   },
   "overrideCommand": false,
-  "postCreateCommand": "bash -lc 'export PATH=/root/.local/bin:/root/.cargo/bin:$PATH && uv --version && uv sync --extra dev'",
-  
-  "mounts": [
-    "source=vscode-extensions,target=/home/vscode/.vscode-server/extensions,type=volume"
-  ]
+  "postCreateCommand": "bash -lc 'export PATH=/root/.local/bin:/root/.cargo/bin:$PATH && uv --version && uv sync --extra dev'"
 }
