@@ -1,9 +1,6 @@
 # Shinkansen Passenger Satisfaction Predictor
 
-[![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](http://creativecommons.org/publicdomain/zero/1.0/)
-[![Python](https://img.shields.io/badge/python-v3.8+-blue.svg)](https://www.python.org/downloads/releases/3.8.0/)
-[![Machine Learning](https://img.shields.io/badge/ML-scikit--learn-orange)](https://scikit-learn.org/)
-[![Hackathon](https://img.shields.io/badge/project-hackathon-brightgreen)](https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor)
+[![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](http://creativecommons.org/publicdomain/zero/1.0/) [![Python](https://img.shields.io/badge/python-v3.10+-blue.svg)](https://www.python.org/downloads/releases/3.10.0/) [![Machine Learning](https://img.shields.io/badge/ML-scikit--learn-orange)](https://scikit-learn.org/) [![Hackathon](https://img.shields.io/badge/project-hackathon-brightgreen)](https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor) [![uv](https://img.shields.io/badge/package_manager-uv-blue)](https://github.com/astral-sh/uv)
 
 ## 🚅 Project Overview
 
@@ -14,6 +11,7 @@ This machine learning project predicts passenger satisfaction on Japan's Shinkan
 ## 🎯 Hackathon Context
 
 This project was created for the Shinkansen Travel Experience hackathon competition, focusing on:
+
 - Predicting passenger satisfaction based on travel patterns
 - Analyzing survey data and travel metrics
 - Implementing machine learning models for real-time predictions
@@ -30,12 +28,13 @@ This project was created for the Shinkansen Travel Experience hackathon competit
 
 ## 🔧 Technical Stack
 
-- **Programming Language**: Python 3.8+
+- **Programming Language**: Python 3.10+
+- **Package Manager**: uv (modern Python package and project manager)
 - **Machine Learning**: scikit-learn, pandas, numpy
 - **Data Visualization**: matplotlib, seaborn, plotly
 - **Data Processing**: pandas, numpy
-- **Model Deployment**: Flask/FastAPI (for API endpoints)
-- **Embedded Systems**: TensorFlow Lite for edge deployment
+- **Model Deployment**: FastAPI (for API endpoints)
+- **Development Tools**: pytest, black, flake8
 
 ## 📊 Dataset Features
 
@@ -63,7 +62,34 @@ The model analyzes various aspects of the Shinkansen travel experience:
 
 ## 🚀 Usage
 
-### Installation
+### Quick Start with uv
+
+This project uses [uv](https://github.com/astral-sh/uv) for fast, reliable Python package management.
+
+```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# or on Windows: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+# or with pip: pip install uv
+
+# Clone the repository
+git clone https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor.git
+cd shinkansen-passenger-satisfaction-predictor
+
+# Create and activate virtual environment with uv
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install all dependencies
+uv sync
+
+# Install with development dependencies
+uv sync --extra dev
+```
+
+### Alternative Installation (Traditional)
+
+If you prefer using traditional pip:
 
 ```bash
 # Clone the repository
@@ -75,7 +101,22 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -e .
+
+# Or install with development dependencies
+pip install -e ".[dev]"
+```
+
+### Running the Application
+
+```bash
+# Run with uv
+uv run python -c "from shinkansen_predictor import SatisfactionPredictor; print('Ready!')"
+
+# Run tools with uvx (no installation needed)
+uvx black src/
+uvx flake8 src/
+uvx pytest tests/
 ```
 
 ### Basic Usage
@@ -142,18 +183,20 @@ This project considers railway industry requirements:
 
 ```
 shinkansen-passenger-satisfaction-predictor/
+├── .python-version          # Python version specification (3.10)
+├── pyproject.toml           # Project configuration and dependencies
+├── uv.lock                  # Lock file for reproducible installs
+├── src/                     # Source code
+│   └── shinkansen_predictor/
+│       ├── __init__.py      # Package initialization
+│       ├── predictor.py     # Satisfaction prediction models
+│       ├── trainer.py       # Model training utilities
+│       └── utils/           # Utility functions
+├── tests/                   # Unit tests
 ├── data/                    # Dataset files
 ├── models/                  # Trained models
 ├── notebooks/               # Jupyter notebooks for analysis
-├── src/                     # Source code
-│   ├── data_processing/     # Data preprocessing modules
-│   ├── models/             # ML model implementations
-│   ├── visualization/       # Plotting and analysis tools
-│   └── utils/              # Utility functions
-├── tests/                   # Unit tests
 ├── docs/                    # Documentation
-├── requirements.txt         # Python dependencies
-├── setup.py                # Package setup
 ├── README.md               # This file
 └── LICENSE                 # CC0-1.0 License
 ```
@@ -170,20 +213,29 @@ We welcome contributions to improve this hackathon project! Please note the non-
 4. **Push** to the branch (`git push origin feature/AmazingFeature`)
 5. **Open** a Pull Request
 
-### Development Setup
+### Development Setup with uv
 
 ```bash
-# Install development dependencies
-pip install -r requirements-dev.txt
+# Clone and setup development environment
+git clone https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor.git
+cd shinkansen-passenger-satisfaction-predictor
+
+# Install with development dependencies
+uv sync --extra dev
 
 # Run tests
-python -m pytest tests/
+uv run pytest tests/
 
 # Run linting
-flake8 src/
+uv run flake8 src/
 
 # Format code
-black src/
+uv run black src/
+
+# Or use uvx for one-off tool usage
+uvx black src/
+uvx flake8 src/
+uvx pytest tests/
 ```
 
 ### Contribution Areas
@@ -202,6 +254,7 @@ This project is licensed under the **Creative Commons Zero v1.0 Universal (CC0-1
 **⚠️ NON-COMMERCIAL USE ONLY**: This project is intended for educational, research, and non-commercial purposes only. Commercial use is strictly prohibited.
 
 ### License Summary
+
 - ✅ **Permitted**: Copy, modify, distribute for non-commercial purposes
 - ✅ **Educational use**: Academic research and learning
 - ✅ **Open source contributions**: Community improvements
@@ -213,6 +266,7 @@ See the [LICENSE](LICENSE) file for full details.
 ## 🏆 Hackathon Achievement
 
 This project was developed as part of the **Shinkansen Travel Experience Hackathon** with the following achievements:
+
 - Comprehensive passenger satisfaction prediction model
 - Integration of multiple data sources
 - Consideration of real-world railway operational constraints
@@ -229,7 +283,7 @@ For questions, suggestions, or collaboration opportunities (non-commercial):
 
 ## 🔗 Related Topics
 
-`machine-learning` `data-science` `embedded-systems` `functional-safety` `hackathon` `shinkansen` `transportation` `python` `passenger-satisfaction` `railway-systems`
+`machine-learning` `data-science` `embedded-systems` `functional-safety` `hackathon` `shinkansen` `transportation` `python` `passenger-satisfaction` `railway-systems` `uv` `package-management`
 
 ---
 
