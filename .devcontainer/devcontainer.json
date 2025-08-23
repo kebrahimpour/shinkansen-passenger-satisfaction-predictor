@@ -33,5 +33,5 @@
     }
   },
   "overrideCommand": false,
-  "postCreateCommand": "bash -lc 'export PATH=/root/.local/bin:/root/.cargo/bin:$PATH && uv --version && uv sync --extra dev'"
+  "postCreateCommand": "uv --version && uv sync --extra dev"
 }
