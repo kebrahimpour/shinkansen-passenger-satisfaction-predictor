@@ -1,8 +1,6 @@
 """Shinkansen Passenger Satisfaction Predictor.
-
 A machine learning project for predicting passenger satisfaction
 on Japan's Shinkansen (bullet train) system using travel and survey data.
-
 Developed for the Shinkansen Travel Experience Hackathon.
 Non-commercial use only.
 """
@@ -10,29 +8,10 @@ Non-commercial use only.
 __version__ = "0.1.0"
 __author__ = "kebrahimpour"
 
-# Placeholder imports - to be implemented
-# from .predictor import SatisfactionPredictor
-# from .trainer import ModelTrainer
-# from .utils import data_utils, model_utils
+# Import the actual implementation from predictor.py
+from .predictor import SatisfactionPredictor
 
-# For now, we'll have basic placeholder classes
-class SatisfactionPredictor:
-    """Placeholder class for satisfaction prediction."""
-    
-    def __init__(self):
-        """Initialize the predictor."""
-        pass
-    
-    def load_model(self, model_path: str):
-        """Load a trained model from file."""
-        pass
-    
-    def predict(self, journey_data: dict):
-        """Predict satisfaction score for journey data."""
-        # Placeholder implementation
-        return 4.2
-
-
+# Placeholder class for model training (to be implemented)
 class ModelTrainer:
     """Placeholder class for model training."""
     
@@ -60,7 +39,6 @@ class ModelTrainer:
             'recall': 0.85,
             'f1_score': 0.87
         }
-
 
 __all__ = [
     'SatisfactionPredictor',
