@@ -28,7 +28,7 @@ Branch protection rules help ensure code quality by requiring specific checks be
 - ☑️ Require branches to be up to date before merging
 - ☑️ **Select the following status checks:**
   - `CI / test (3.10)` - Python 3.10 test suite
-  - `CI / test (3.11)` - Python 3.11 test suite  
+  - `CI / test (3.11)` - Python 3.11 test suite
   - `CI / test (3.12)` - Python 3.12 test suite
   - `Lint` - Code quality checks
   - `Test` - Legacy test workflow (if present)
@@ -255,7 +255,7 @@ Follow [Semantic Versioning](https://semver.org/):
 
 ---
 
-**Last Updated**: August 2025  
+**Last Updated**: August 2025
 **Next Review**: November 2025
 
 > ⚠️ **Important**: Keep this document updated as the project evolves. Review and update quarterly or after significant changes to the repository structure or team composition.

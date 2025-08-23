@@ -12,18 +12,18 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.10', '3.11']
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Install uv
       uses: astral-sh/setup-uv@v3
       with:
         version: "latest"
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       run: uv python install ${{ matrix.python-version }}
-    
+
     - name: Cache dependencies
       uses: actions/cache@v4
       with:
@@ -32,15 +32,15 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-uv-${{ matrix.python-version }}-
           ${{ runner.os }}-uv-
-    
+
     - name: Install dependencies
       run: |
         uv sync --extra dev
-    
+
     - name: Run pytest
       run: |
         uv run pytest tests/ -v --tb=short
-    
+
     - name: Run doctest
       run: |
         uv run python -m doctest src/shinkansen_predictor/*.py -v

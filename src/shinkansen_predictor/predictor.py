@@ -1,231 +1,225 @@
-"""Minimal SatisfactionPredictor implementation for Shinkansen passenger satisfaction prediction."""
+from __future__ import annotations
 
-import pickle
-import pandas as pd
-from typing import Union, List, Dict, Any
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Sequence, Union
+
+import os
+
+import numpy as np
 from sklearn.linear_model import LinearRegression
-from sklearn.base import BaseEstimator
 
 
+Number = Union[int, float]
+FeatureDict = Dict[str, Any]
+XInput = Union[Sequence[Number], FeatureDict]
+XArray = Sequence[XInput]
+
+
+def _is_mapping(obj: Any) -> bool:
+    return isinstance(obj, dict)
+
+
+@dataclass
 class SatisfactionPredictor:
-    """Minimal satisfaction predictor with fit, save, load, and predict functionality.
-    
-    This class provides a simple interface for training machine learning models
-    to predict passenger satisfaction scores, with support for model persistence.
     """
-    
-    def __init__(self, model: BaseEstimator = None):
-        """Initialize the predictor.
-        
-        Args:
-            model: Scikit-learn estimator to use for prediction.
-                  Defaults to LinearRegression if None.
+    Simple satisfaction predictor using LinearRegression.
+    Assumes target scale is 0..5 and clamps predictions into this range.
+    """
+
+    model: Optional[LinearRegression] = None
+    feature_names: Optional[List[str]] = field(default=None, init=False)
+    _is_fitted: bool = field(default=False, init=False)
+    _cat_maps: Optional[Dict[str, Dict[Any, int]]] = field(default=None, init=False)
+
+    def _infer_feature_names(self, X: XArray) -> List[str]:
+        if not X:
+            raise ValueError("Training data cannot be empty")
+
+        first = X[0]
+        if _is_mapping(first):
+            # consistent order for dict-based features
+            return sorted(first.keys())
+        else:
+            # numeric vector indices as synthetic names
+            return [f"f{i}" for i in range(len(first))]
+
+    def _detect_categorical(self, X: XArray, feature_names: List[str]) -> List[str]:
+        # Detect categorical features by type in first row
+        first = X[0]
+        cat_feats = []
+        if _is_mapping(first):
+            for k in feature_names:
+                v = first[k]
+                if isinstance(v, str):
+                    cat_feats.append(k)
+        return cat_feats
+
+    def _fit_categorical_maps(
+        self, X: XArray, feature_names: List[str]
+    ) -> Dict[str, Dict[Any, int]]:
+        cat_feats = self._detect_categorical(X, feature_names)
+        cat_maps: Dict[str, Dict[Any, int]] = {}
+        for feat in cat_feats:
+            values = set(row[feat] for row in X)
+            cat_maps[feat] = {val: idx for idx, val in enumerate(sorted(values))}
+        return cat_maps
+
+    def _extract_features(
+        self, X: XArray, feature_names: Optional[List[str]] = None
+    ) -> np.ndarray:
         """
-        self.model = model if model is not None else LinearRegression()
-        self._is_fitted = False
-    
-    def fit(self, X: Union[pd.DataFrame, List[Dict]], y: Union[pd.Series, List]) -> 'SatisfactionPredictor':
-        """Fit the model using training data.
-        
-        Args:
-            X: Training features as DataFrame or list of dictionaries
-            y: Training targets as Series or list
-            
-        Returns:
-            self: Returns the fitted predictor instance
-            
-        Examples:
-            >>> predictor = SatisfactionPredictor()
-            >>> X = [{'duration': 120, 'class': 'Green'}, {'duration': 90, 'class': 'Ordinary'}]
-            >>> y = [4.5, 3.8]
-            >>> predictor.fit(X, y)  # doctest: +ELLIPSIS
-            <...SatisfactionPredictor object at 0x...>
+        Convert heterogeneous inputs into a 2D float array with columns aligned
+        to feature_names. For dict inputs, missing keys raise a ValueError
+        matching scikit-learn's semantics in tests.
         """
-        # Convert input to DataFrame if it's a list of dicts
-        if isinstance(X, list) and all(isinstance(item, dict) for item in X):
-            X = pd.DataFrame(X)
-        
-        # Handle categorical variables with simple encoding
-        X_processed = self._preprocess_features(X)
-        
-        # Fit the model
-        self.model.fit(X_processed, y)
+        if feature_names is None:
+            feature_names = self.feature_names
+        if feature_names is None:
+            raise ValueError("feature_names must be set before extracting features")
+
+        rows: List[List[float]] = []
+        if not X:
+            return np.zeros((0, len(feature_names)), dtype=float)
+
+        # Handle single dict or sequence
+        if isinstance(X, dict):
+            X = [X]
+        elif isinstance(X, (list, tuple)) and (
+            len(X) > 0 and isinstance(X[0], (int, float))
+        ):
+            X = [X]
+
+        cat_maps = getattr(self, "_cat_maps", None)
+        for row in X:  # type: ignore[index]
+            if _is_mapping(row):
+                missing = [k for k in feature_names if k not in row]
+                if missing:
+                    msg = (
+                        "The feat. names should match those passed during fit.\n"
+                        "Feature names seen at fit time, yet now missing:\n- "
+                    )
+                    msg += "\n- ".join(missing)
+                    raise ValueError(msg)
+                vals = []
+                for k in feature_names:
+                    v = row[k]
+                    if cat_maps and k in cat_maps:
+                        try:
+                            vals.append(float(cat_maps[k][v]))
+                        except KeyError:
+                            # Unseen category: assign a new index
+                            cat_maps[k][v] = len(cat_maps[k])
+                            vals.append(float(cat_maps[k][v]))
+                    else:
+                        try:
+                            vals.append(float(v))
+                        except Exception:
+                            raise ValueError(
+                                f"Feature '{k}' value '{v}' is not numeric and "
+                                "not categorical"
+                            )
+                rows.append(vals)
+            else:
+                # Sequence input
+                try:
+                    vals = [float(v) for v in row]
+                except Exception:
+                    raise ValueError("All feature values must be numeric")
+                rows.append(vals)
+
+        return np.asarray(rows, dtype=float)
+
+    def fit(self, X: XArray, y: Sequence[Number]) -> "SatisfactionPredictor":
+        # Input validation
+        if X is None or y is None:
+            raise ValueError("X and y must not be None")
+
+        if not isinstance(y, Sequence) or len(y) == 0:
+            raise ValueError("Training data cannot be empty")
+
+        if not isinstance(X, Sequence) or len(X) == 0:
+            raise ValueError("Training data cannot be empty")
+
+        if len(X) != len(y):
+            raise ValueError("X and y must have the same length")
+
+        # Validate target bounds (0..5)
+        y_list = list(float(v) for v in y)
+        if any((v < 0 or v > 5) for v in y_list):
+            raise ValueError("Target values must be between 0 and 5")
+
+        # Determine feature names on first fit or recompute for consistency
+        self.feature_names = self._infer_feature_names(X)
+
+        # Fit categorical mappings
+        self._cat_maps = self._fit_categorical_maps(X, self.feature_names)
+
+        # Vectorize features
+        X_processed = self._extract_features(X, self.feature_names)
+
+        # Fresh model per fit to ensure overwrite behavior
+        self.model = LinearRegression()
+        self.model.fit(X_processed, y_list)
         self._is_fitted = True
-        
         return self
-    
-    def predict(self, journey_data: Union[Dict, List[Dict], pd.DataFrame]) -> Union[float, List[float]]:
-        """Predict satisfaction score(s) for journey data.
-        
-        Args:
-            journey_data: Journey data as dict, list of dicts, or DataFrame
-            
-        Returns:
-            Predicted satisfaction score(s)
-            
-        Examples:
-            >>> predictor = SatisfactionPredictor()
-            >>> # Mock a fitted model for doctest
-            >>> predictor._is_fitted = True
-            >>> import numpy as np
-            >>> predictor.model.coef_ = np.array([0.1])
-            >>> predictor.model.intercept_ = 4.0
-            >>> journey = {'duration': 120, 'class': 'Green'}
-            >>> score = predictor.predict(journey)
-            >>> isinstance(score, (int, float))
-            True
-        """
-        if not self._is_fitted:
+
+    def predict(self, X: XArray) -> Union[Number, List[Number]]:
+        if self.model is None or self.feature_names is None or not self._is_fitted:
             raise ValueError("Model must be fitted before making predictions")
-        
-        # Handle single dictionary input
-        if isinstance(journey_data, dict):
-            journey_data = [journey_data]
-            single_prediction = True
+
+        # Single item handling
+        if isinstance(X, dict) or (
+            isinstance(X, (list, tuple))
+            and (len(X) > 0 and isinstance(X[0], (int, float)))
+        ):
+            X_list = [X]  # type: ignore[list-item]
         else:
-            single_prediction = False
-        
-        # Convert to DataFrame if needed
-        if isinstance(journey_data, list):
-            journey_data = pd.DataFrame(journey_data)
-        
-        # Preprocess features
-        X_processed = self._preprocess_features(journey_data)
-        
-        # Make predictions
-        predictions = self.model.predict(X_processed)
-        
-        # Return single value or list based on input
-        if single_prediction:
-            return float(predictions[0])
-        else:
-            return predictions.tolist()
-    
-    def save_model(self, model_path: str) -> None:
-        """Save the trained model to disk using pickle.
-        
-        Args:
-            model_path: Path where to save the model
-            
-        Examples:
-            >>> import tempfile
-            >>> import os
-            >>> predictor = SatisfactionPredictor()
-            >>> with tempfile.NamedTemporaryFile(suffix='.pkl', delete=False) as f:
-            ...     predictor.save_model(f.name)
-            ...     os.path.exists(f.name)
-            True
-        """
-        model_data = {
-            'model': self.model,
-            'is_fitted': self._is_fitted
+            X_list = list(X)  # type: ignore[call-arg]
+
+        X_processed = self._extract_features(X_list, self.feature_names)
+        preds = self.model.predict(X_processed)
+
+        # Clamp predictions into [0, 5]
+        preds = np.clip(preds, 0.0, 5.0)
+
+        if len(preds) == 1:
+            return float(preds)
+        return [float(p) for p in preds]
+
+    def save_model(self, path: str) -> None:
+        if self.model is None or self.feature_names is None or not self._is_fitted:
+            raise ValueError("Model must be fitted before saving")
+
+        data = {
+            "coef": self.model.coef_.tolist(),
+            "intercept": float(self.model.intercept_),
+            "feature_names": self.feature_names,
+            "cat_maps": self._cat_maps,
         }
-        
-        with open(model_path, 'wb') as f:
-            pickle.dump(model_data, f)
-    
-    def load_model(self, model_path: str) -> None:
-        """Load a trained model from disk using pickle.
-        
-        Args:
-            model_path: Path to the saved model file
-            
-        Examples:
-            >>> import tempfile
-            >>> import os
-            >>> # Create and save a model first
-            >>> predictor1 = SatisfactionPredictor()
-            >>> with tempfile.NamedTemporaryFile(suffix='.pkl', delete=False) as f:
-            ...     predictor1.save_model(f.name)
-            ...     # Load in a new instance
-            ...     predictor2 = SatisfactionPredictor()
-            ...     predictor2.load_model(f.name)
-            ...     isinstance(predictor2.model, LinearRegression)
-            True
-        """
-        with open(model_path, 'rb') as f:
-            model_data = pickle.load(f)
-        
-        self.model = model_data['model']
-        self._is_fitted = model_data['is_fitted']
-    
-    def _preprocess_features(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Simple preprocessing of features.
-        
-        This is a minimal implementation that handles basic categorical encoding.
-        In a production system, this would be more sophisticated.
-        
-        Args:
-            X: Input features as DataFrame
-            
-        Returns:
-            Preprocessed features
-        """
-        X_processed = X.copy()
-        
-        # Simple categorical encoding for common columns
-        if 'class' in X_processed.columns:
-            # Map service classes to numeric values
-            class_mapping = {'Ordinary': 1, 'Green': 2, 'GranClass': 3}
-            X_processed['class'] = X_processed['class'].map(class_mapping).fillna(1)
-        
-        # Fill missing numeric values with median
-        numeric_columns = X_processed.select_dtypes(include=['number']).columns
-        for col in numeric_columns:
-            X_processed[col] = X_processed[col].fillna(X_processed[col].median())
-        
-        # For any remaining categorical columns, use simple label encoding
-        categorical_columns = X_processed.select_dtypes(include=['object']).columns
-        for col in categorical_columns:
-            X_processed[col] = pd.Categorical(X_processed[col]).codes
-        
-        return X_processed
+        import json
 
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f)
 
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
-    
-    # Additional simple tests
-    print("Running basic functionality tests...")
-    
-    # Test basic workflow
-    predictor = SatisfactionPredictor()
-    
-    # Sample training data
-    X_train = [
-        {'duration': 120, 'class': 'Green', 'on_time': 0.95},
-        {'duration': 90, 'class': 'Ordinary', 'on_time': 0.88},
-        {'duration': 180, 'class': 'GranClass', 'on_time': 0.99},
-        {'duration': 60, 'class': 'Ordinary', 'on_time': 0.92}
-    ]
-    y_train = [4.5, 3.8, 4.9, 4.1]
-    
-    # Fit the model
-    predictor.fit(X_train, y_train)
-    print("✓ Model fitted successfully")
-    
-    # Test prediction
-    test_journey = {'duration': 100, 'class': 'Green', 'on_time': 0.93}
-    score = predictor.predict(test_journey)
-    print(f"✓ Prediction successful: {score:.2f}")
-    
-    # Test save/load
-    import tempfile
-    with tempfile.NamedTemporaryFile(suffix='.pkl', delete=False) as f:
-        model_path = f.name
-    
-    predictor.save_model(model_path)
-    print("✓ Model saved successfully")
-    
-    # Load in new instance
-    new_predictor = SatisfactionPredictor()
-    new_predictor.load_model(model_path)
-    new_score = new_predictor.predict(test_journey)
-    print(f"✓ Model loaded successfully: {new_score:.2f}")
-    
-    # Clean up
-    import os
-    os.unlink(model_path)
-    
-    print("All tests passed! 🚅")
+    def load_model(self, path: str) -> None:
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Model file not found: {path}")
+
+        try:
+            import json
+
+            with open(path, "r", encoding="utf-8") as f:
+                model_data = json.load(f)
+        except Exception as e:
+            raise IOError(f"Failed to load model: {e}") from e
+
+        required_keys = {"coef", "intercept", "feature_names"}
+        if not required_keys.issubset(model_data):
+            raise ValueError("Invalid model file format")
+
+        self.feature_names = list(model_data["feature_names"])
+        self._cat_maps = model_data.get("cat_maps", None)
+        self.model = LinearRegression()
+        self.model.coef_ = np.asarray(model_data["coef"], dtype=float)
+        self.model.intercept_ = float(model_data["intercept"])
+        self._is_fitted = True

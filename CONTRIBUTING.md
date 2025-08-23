@@ -74,10 +74,10 @@ Our CI system tests against the following environments:
    ```bash
    # Run all tests
    uv run pytest tests/
-   
+
    # Run with coverage
    uv run pytest tests/ --cov=src --cov-report=term-missing
-   
+
    # Run pre-commit checks
    uv run pre-commit run --all-files
    ```

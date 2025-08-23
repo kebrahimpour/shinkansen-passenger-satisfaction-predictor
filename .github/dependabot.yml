@@ -16,7 +16,7 @@ updates:
     commit-message:
       prefix: "ci"
       include: "scope"
-  
+
   # Python dependencies (via pip/uv)
   - package-ecosystem: "pip"
     directory: "/"

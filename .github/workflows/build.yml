@@ -9,15 +9,15 @@ on:
 jobs:
   devcontainer-build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Install uv
       uses: astral-sh/setup-uv@v3
       with:
         version: "latest"
-    
+
     - name: Cache dependencies
       uses: actions/cache@v4
       with:
@@ -26,34 +26,34 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-uv-build-
           ${{ runner.os }}-uv-
-    
+
     - name: Set up Python
       run: uv python install
-    
+
     - name: Install dependencies
       run: |
         uv sync --extra dev
-    
+
     - name: Build devcontainer
       run: |
         # Install devcontainer CLI
         npm install -g @devcontainers/cli
-        
+
         # Build devcontainer
         devcontainer build --workspace-folder .
-    
+
     - name: Test devcontainer setup
       run: |
         # Test that devcontainer can run basic commands
         devcontainer exec --workspace-folder . uv --version
         devcontainer exec --workspace-folder . python --version
         devcontainer exec --workspace-folder . uv run python -c "import shinkansen_predictor; print('Package import successful')"
-    
+
     - name: Test package build
       run: |
         # Test that package builds correctly
         uv build
-        
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:

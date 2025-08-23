@@ -42,6 +42,7 @@ dev = [
     "pytest-cov>=4.1.0",
     "jupyter>=1.0.0",
     "notebook>=7.0.0",
+    "pre-commit>=2.21.0"
 ]
 
 [project.urls]
@@ -57,7 +58,7 @@ dev-dependencies = [
     "pytest-cov>=4.1.0",
     "jupyter>=1.0.0",
     "notebook>=7.0.0",
-    "ruff>=0.4.6"
+    "ruff>=0.4.6",
 ]
 
 [tool.black]
