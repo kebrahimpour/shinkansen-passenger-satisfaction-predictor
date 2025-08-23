@@ -15,13 +15,8 @@ RUN apt-get update && apt-get install -y \
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
     && ln -s /root/.cargo/bin/uv /usr/local/bin/uv
 
-# Copy and setup initialize script
-COPY initialize.sh /usr/local/bin/initialize.sh
-RUN chmod +x /usr/local/bin/initialize.sh
-
 # Set the working directory
 WORKDIR /workspace
 
-# Set ENTRYPOINT to handle permissions, then CMD for default behavior
-ENTRYPOINT ["/usr/local/bin/initialize.sh"]
+# Default CMD for container
 CMD ["sleep", "infinity"]
