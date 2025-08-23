@@ -1,7 +1,7 @@
 # Dockerfile for FastAPI serving of Shinkansen passenger satisfaction predictor
 # Based on tiangolo/uvicorn-gunicorn-fastapi:python3.10
 
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.10
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.12
 
 # Set working directory
 WORKDIR /app
