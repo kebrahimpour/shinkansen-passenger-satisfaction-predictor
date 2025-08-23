@@ -1,5 +1,5 @@
 # Dockerfile for FastAPI serving of Shinkansen passenger satisfaction predictor
-# Based on tiangolo/uvicorn-gunicorn-fastapi:python3.10
+# Based on tiangolo/uvicorn-gunicorn-fastapi:python3.12
 
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.12
 
@@ -19,7 +19,8 @@ RUN uv sync --frozen --no-dev
 COPY src/ /app/src/
 
 # Copy models directory if it exists (optional)
-COPY models/ /app/models/ 2>/dev/null || mkdir -p /app/models
+RUN mkdir -p /app/models
+COPY models/ /app/models/
 
 # Set Python path to include src directory
 ENV PYTHONPATH="/app/src:${PYTHONPATH}"
@@ -40,9 +41,8 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:80/health || exit 1
 
 # The base image already includes the CMD to run uvicorn with gunicorn workers
-# CMD is inherited from tiangolo/uvicorn-gunicorn-fastapi:python3.10
+# CMD is inherited from tiangolo/uvicorn-gunicorn-fastapi:python3.12
 # It will run: uvicorn $MODULE_NAME:$VARIABLE_NAME --host $HOST --port $PORT
-
 
 # For development override, you can run:
 # docker run -p 8000:80 -e MODULE_NAME="shinkansen_predictor.api" -e VARIABLE_NAME="app" <image>
