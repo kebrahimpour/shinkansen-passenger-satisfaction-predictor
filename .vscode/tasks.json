@@ -18,7 +18,7 @@
     },
     {
       "label": "Run Tests",
-      "type": "shell", 
+      "type": "shell",
       "command": "uv",
       "args": ["run", "pytest"],
       "group": {
@@ -77,6 +77,12 @@
         "panel": "shared",
         "showReuseMessage": true
       },
+      "problemMatcher": []
+    },
+    {
+      "label": "Dev Container: Rebuild without cache",
+      "type": "shell",
+      "command": "${command:Dev Containers: Rebuild Container without Cache}",
       "problemMatcher": []
     }
   ]
