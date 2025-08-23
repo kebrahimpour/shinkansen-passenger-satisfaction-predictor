@@ -188,3 +188,4 @@ models/*.joblib
 # Logs
 logs/
 *.log
+.vscode/
