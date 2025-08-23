@@ -1,6 +1,6 @@
 # Shinkansen Passenger Satisfaction Predictor
 
-[![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](http://creativecommons.org/publicdomain/zero/1.0/) [![Python](https://img.shields.io/badge/python-v3.10+-blue.svg)](https://www.python.org/downloads/releases/3.10.0/) [![Machine Learning](https://img.shields.io/badge/ML-scikit--learn-orange)](https://scikit-learn.org/) [![Hackathon](https://img.shields.io/badge/project-hackathon-brightgreen)](https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor) [![uv](https://img.shields.io/badge/package_manager-uv-blue)](https://github.com/astral-sh/uv)
+[![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](http://creativecommons.org/publicdomain/zero/1.0/) [![Python](https://img.shields.io/badge/python-v3.10+-blue.svg)](https://www.python.org/downloads/releases/3.10.0/) [![Machine Learning](https://img.shields.io/badge/ML-scikit--learn-orange)](https://scikit-learn.org/) [![Hackathon](https://img.shields.io/badge/project-hackathon-brightgreen)](https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor) [![uv](https://img.shields.io/badge/package_manager-uv-blue)](https://github.com/astral-sh/uv) [![CI - Lint](https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor/workflows/Lint/badge.svg)](https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor/actions/workflows/lint.yml) [![CI - Test](https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor/workflows/Test/badge.svg)](https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor/actions/workflows/test.yml) [![CI - Build](https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor/workflows/Build/badge.svg)](https://github.com/kebrahimpour/shinkansen-passenger-satisfaction-predictor/actions/workflows/build.yml)
 
 ## 🚅 Project Overview
 
@@ -41,6 +41,7 @@ This project was created for the Shinkansen Travel Experience hackathon competit
 The model analyzes various aspects of the Shinkansen travel experience:
 
 ### Travel Data
+
 - Journey duration and distance
 - Train type and service class
 - Departure/arrival times
@@ -48,6 +49,7 @@ The model analyzes various aspects of the Shinkansen travel experience:
 - Weather conditions
 
 ### Survey Data
+
 - Service quality ratings
 - Comfort assessments
 - Cleanliness scores
@@ -55,6 +57,7 @@ The model analyzes various aspects of the Shinkansen travel experience:
 - Overall satisfaction scores
 
 ### Operational Metrics
+
 - On-time performance
 - Safety incidents
 - System reliability metrics
@@ -207,11 +210,11 @@ We welcome contributions to improve this hackathon project! Please note the non-
 
 ### Guidelines for Contributors
 
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** your changes (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** to the branch (`git push origin feature/AmazingFeature`)
-5. **Open** a Pull Request
+1. Fork the repository
+2. Create a feature branch (git checkout -b feature/AmazingFeature)
+3. Commit your changes (git commit -m 'Add some AmazingFeature')
+4. Push to the branch (git push origin feature/AmazingFeature)
+5. Open a Pull Request
 
 ### Development Setup with uv
 
@@ -249,7 +252,7 @@ uvx pytest tests/
 
 ## 📄 License
 
-This project is licensed under the **Creative Commons Zero v1.0 Universal (CC0-1.0)** license.
+This project is licensed under the Creative Commons Zero v1.0 Universal (CC0-1.0) license.
 
 **⚠️ NON-COMMERCIAL USE ONLY**: This project is intended for educational, research, and non-commercial purposes only. Commercial use is strictly prohibited.
 
@@ -265,7 +268,7 @@ See the [LICENSE](LICENSE) file for full details.
 
 ## 🏆 Hackathon Achievement
 
-This project was developed as part of the **Shinkansen Travel Experience Hackathon** with the following achievements:
+This project was developed as part of the Shinkansen Travel Experience Hackathon with the following achievements:
 
 - Comprehensive passenger satisfaction prediction model
 - Integration of multiple data sources
