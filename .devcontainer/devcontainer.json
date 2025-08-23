@@ -1,6 +1,9 @@
 {
   "name": "Python 3.10 Development Container",
-  "image": "mcr.microsoft.com/devcontainers/python:3.10",
+  "build": {
+    "context": ".",
+    "dockerfile": "Dockerfile"
+  },
   
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
@@ -16,7 +19,6 @@
       "gid": "1000"
     }
   },
-
   "customizations": {
     "vscode": {
       "extensions": [
@@ -33,9 +35,8 @@
       }
     }
   },
-
-  "postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && source ~/.bashrc && uv sync --extra dev",
-
+  "overrideCommand": false,
+  "postCreateCommand": "uv sync --extra dev",
   "remoteUser": "vscode",
   
   "mounts": [
