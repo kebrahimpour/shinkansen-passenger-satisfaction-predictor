@@ -2,7 +2,7 @@
   "name": "Python 3.10 Development Container",
   "build": {
     "context": ".",
-    "dockerfile": "Dockerfile"
+    "dockerfile": "Dockerfile.api"
   },
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
