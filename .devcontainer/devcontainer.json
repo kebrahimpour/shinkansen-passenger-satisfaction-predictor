@@ -37,7 +37,6 @@
   },
   "overrideCommand": false,
   "postCreateCommand": "bash -lc 'export PATH=/root/.local/bin:/root/.cargo/bin:$PATH && uv --version && uv sync --extra dev'",
-  "remoteUser": "vscode",
   
   "mounts": [
     "source=vscode-extensions,target=/home/vscode/.vscode-server/extensions,type=volume"
