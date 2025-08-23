@@ -156,7 +156,7 @@ cython_debug/
 
 # uv
 .uv_cache/
-uv.lock
+#uv.lock
 
 # VS Code
 .vscode/
