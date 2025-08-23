@@ -227,7 +227,7 @@ class TestSatisfactionPredictor:
         features2 = self.predictor._extract_features(test_data)
 
         assert np.array_equal(features1, features2)
-        assert len(features1) == len(self.predictor.feature_names)
+        assert features1.shape[1] == len(self.predictor.feature_names)
 
     def test_prediction_consistency(self):
         """Test that predictions are consistent for the same input."""
