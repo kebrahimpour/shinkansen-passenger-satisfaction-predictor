@@ -45,3 +45,9 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 
 # For development override, you can run:
 # docker run -p 8000:80 -e MODULE_NAME="shinkansen_predictor.api" -e VARIABLE_NAME="app" <image>
+
+[project.optional-dependencies]
+dev = [
+"pre-commit",
+# ...other dev dependencies...
+]
