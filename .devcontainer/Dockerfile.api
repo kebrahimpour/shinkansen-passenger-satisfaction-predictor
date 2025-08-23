@@ -1,2 +1,0 @@
-# This Dockerfile is a symlink to the root Dockerfile.api for Dev Container compatibility
-FROM ./Dockerfile.api

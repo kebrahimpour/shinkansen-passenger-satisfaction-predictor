@@ -1,5 +1,5 @@
-# Use the official Python 3.10 dev container base image
-FROM mcr.microsoft.com/devcontainers/python:3.10
+# Use the official Python 3.12 dev container base image
+FROM mcr.microsoft.com/devcontainers/python:3.12
 # Install system dependencies and build tools
 RUN apt-get update && apt-get install -y \
     curl \
