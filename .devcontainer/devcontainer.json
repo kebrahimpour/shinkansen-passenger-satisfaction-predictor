@@ -1,36 +1,31 @@
 {
-  "name": "Python 3.12 Development Container",
-  "build": {
-    "context": ".",
-    "dockerfile": "Dockerfile"
-  },
-  "features": {
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "dockerDashComposeVersion": "v2"
+    "name": "Shinkansen ML Development",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
     },
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      "installZsh": true,
-      "installOhMyZsh": true,
-      "upgradePackages": true
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    },
+    "postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH=\"$HOME/.local/bin:$PATH\" && uv sync --extra dev",
+    "customizations": {
+        "vscode": {
+            "settings": {},
+            "extensions": [
+                "ms-python.python",
+                "ms-python.flake8",
+                "ms-python.pylint",
+                "ms-python.black-formatter",
+                "ms-toolsai.jupyter",
+                "ms-vscode.vscode-json"
+            ]
+        }
+    },
+    "mounts": [
+        "source=${localEnv:SHINKANSEN_DATA_PATH:/tmp/shinkansen-data},target=/workspaces/shinkansen-passenger-satisfaction-predictor/data,type=bind"
+    ],
+    "containerEnv": {
+        "DATA_PATH": "/workspaces/shinkansen-passenger-satisfaction-predictor/data"
     }
-  },
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "ms-toolsai.jupyter",
-        "charliermarsh.ruff",
-        "ms-azuretools.vscode-docker",
-        "github.copilot"
-      ],
-      "settings": {
-        "python.defaultInterpreterPath": "./.venv/bin/python",
-        "python.terminal.activateEnvironment": false
-      }
-    }
-  },
-  "overrideCommand": false,
-  "postCreateCommand": "uv --version && uv sync --extra dev"
 }
