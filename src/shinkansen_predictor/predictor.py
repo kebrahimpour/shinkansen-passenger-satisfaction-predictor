@@ -215,16 +215,15 @@ class SatisfactionPredictor:
             raise ValueError("Model must be fitted before making predictions")
 
         is_single_sample = False
-        # prepare input as list of dicts / sequences
-        if _is_mapping(X):
-            is_single_sample = True
-            X_list = [X]
-        elif (
+        # Check if input is a single flat sequence (e.g., [1, 2, 3])
+        is_flat_sequence = (
             isinstance(X, (list, tuple))
             and len(X) > 0
             and not isinstance(X[0], (list, tuple, dict))
-        ):
-            # single sample provided as a flat numeric sequence
+        )
+
+        # prepare input as list of dicts / sequences
+        if _is_mapping(X) or is_flat_sequence:
             is_single_sample = True
             X_list = [X]
         else:
