@@ -453,7 +453,10 @@ def test_extract_features_dict_missing_key():
     ]
     with pytest.raises(
         KeyError,
-        match=r".*The feature names should match those that were passed during fit.*",
+        match=(
+            r"(?s).*The feature names should match those that were passed"
+            r".*during fit.*"
+        ),
     ):
         predictor._extract_features(X, feature_names)
 
