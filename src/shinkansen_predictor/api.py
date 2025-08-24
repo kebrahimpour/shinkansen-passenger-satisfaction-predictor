@@ -46,11 +46,11 @@ def get_predictor() -> SatisfactionPredictor:
 class PredictionRequest(BaseModel):
     """Defines the schema for a prediction request."""
 
-    duration: int = Field(..., example=120)
-    service_class: str = Field(..., example="Green")
-    on_time_performance: float = Field(..., example=0.95)
-    weather_condition: str = Field(..., example="clear")
-    seat_occupancy: float = Field(..., example=0.8)
+    duration: int = Field(..., json_schema_extra={"example": 120})
+    service_class: str = Field(..., json_schema_extra={"example": "Green"})
+    on_time_performance: float = Field(..., json_schema_extra={"example": 0.95})
+    weather_condition: str = Field(..., json_schema_extra={"example": "clear"})
+    seat_occupancy: float = Field(..., json_schema_extra={"example": 0.8})
 
     @field_validator("service_class")
     def validate_service_class(cls, v):
@@ -63,7 +63,7 @@ class PredictionRequest(BaseModel):
 class PredictionResponse(BaseModel):
     """Defines the schema for a prediction response."""
 
-    prediction: float = Field(..., example=4.2)
+    prediction: float = Field(..., json_schema_extra={"example": 4.2})
 
 
 @app.get("/")
