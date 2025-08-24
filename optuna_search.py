@@ -72,8 +72,7 @@ def run_optuna_search(
 
     # detect problem type from y
     is_regression = not (
-        pd.api.types.is_integer_dtype(
-            y) or pd.api.types.is_categorical_dtype(y)
+        pd.api.types.is_integer_dtype(y) or pd.api.types.is_categorical_dtype(y)
     )
     n_classes = int(y.nunique()) if not is_regression else None
 
@@ -128,10 +127,8 @@ def run_optuna_search(
     sampler = optuna.samplers.TPESampler(seed=random_state)
     pruner = optuna.pruners.MedianPruner()
 
-    study = optuna.create_study(
-        direction="maximize", sampler=sampler, pruner=pruner)
-    study.optimize(objective, n_trials=n_trials,
-                   n_jobs=1, show_progress_bar=False)
+    study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
+    study.optimize(objective, n_trials=n_trials, n_jobs=1, show_progress_bar=False)
 
     return study.best_trial.params, study.best_value, study
 
@@ -153,14 +150,12 @@ def load_and_merge(
     if "ID" in train_travel.columns and "ID" in train_survey.columns:
         train = pd.merge(train_travel, train_survey, on="ID")
     else:
-        train = pd.merge(train_travel, train_survey,
-                         left_index=True, right_index=True)
+        train = pd.merge(train_travel, train_survey, left_index=True, right_index=True)
 
     if "ID" in test_travel.columns and "ID" in test_survey.columns:
         test = pd.merge(test_travel, test_survey, on="ID")
     else:
-        test = pd.merge(test_travel, test_survey,
-                        left_index=True, right_index=True)
+        test = pd.merge(test_travel, test_survey, left_index=True, right_index=True)
 
     return train, test
 
@@ -178,8 +173,7 @@ def basic_map_and_impute(train, test):
             med = pd.to_numeric(train[col], errors="coerce").median()
             train[col] = pd.to_numeric(train[col], errors="coerce").fillna(med)
             if col in test.columns:
-                test[col] = pd.to_numeric(
-                    test[col], errors="coerce").fillna(med)
+                test[col] = pd.to_numeric(test[col], errors="coerce").fillna(med)
 
     satisfaction_mapping = {
         "Extremely Poor": 0,
@@ -211,8 +205,7 @@ def basic_map_and_impute(train, test):
             med = train[c].median()
             train[c] = train[c].fillna(med)
             if c in test.columns:
-                test[c] = test[c].map(
-                    satisfaction_mapping).astype(float).fillna(med)
+                test[c] = test[c].map(satisfaction_mapping).astype(float).fillna(med)
 
     # Ensure categorical string columns in both frames are strings and missing replaced with "__MISSING__"
     for df in (train, test):
@@ -225,10 +218,8 @@ def basic_map_and_impute(train, test):
 def build_preprocessor(X: pd.DataFrame):
     """Build ColumnTransformer: median impute + StandardScaler for numerics, impute+OneHot for categoricals."""
     numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
-    numeric_cols = [c for c in numeric_cols if c not in (
-        "ID", "Overall_Experience")]
-    categorical_cols = X.select_dtypes(
-        include=["object", "category"]).columns.tolist()
+    numeric_cols = [c for c in numeric_cols if c not in ("ID", "Overall_Experience")]
+    categorical_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
 
     numeric_pipeline = Pipeline(
         [
@@ -278,8 +269,7 @@ def choose_model_and_scoring(y: pd.Series):
                 n_jobs=-1,
             )
         scoring = "accuracy"
-        cv = StratifiedKFold(n_splits=CV_FOLDS, shuffle=True,
-                             random_state=RANDOM_STATE)
+        cv = StratifiedKFold(n_splits=CV_FOLDS, shuffle=True, random_state=RANDOM_STATE)
     else:
         model = XGBRegressor(random_state=RANDOM_STATE, n_jobs=-1)
         scoring = make_scorer(mean_absolute_error, greater_is_better=False)
@@ -305,39 +295,63 @@ def create_ensemble(is_regression: bool, xgb_params: dict | None, random_state: 
     """Construct a stacking ensemble with XGB, RandomForest, MLP and (optionally) LightGBM."""
     estimators = []
     if is_regression:
-        xgb_base = XGBRegressor(random_state=random_state,
-                                n_jobs=-1, verbosity=0, **(xgb_params or {}))
+        xgb_base = XGBRegressor(
+            random_state=random_state, n_jobs=-1, verbosity=0, **(xgb_params or {})
+        )
         rf_base = RandomForestRegressor(random_state=random_state, n_jobs=-1)
         # Add MLP Regressor - alpha is a regularization parameter
-        mlp_base = MLPRegressor(hidden_layer_sizes=(
-            100, 50), alpha=0.1, max_iter=1000, random_state=random_state)
+        mlp_base = MLPRegressor(
+            hidden_layer_sizes=(100, 50),
+            alpha=0.1,
+            max_iter=1000,
+            random_state=random_state,
+        )
 
         estimators.append(("xgb", xgb_base))
         estimators.append(("rf", rf_base))
         estimators.append(("mlp", mlp_base))  # Added MLP
         if LGB_AVAILABLE:
-            estimators.append(("lgb", lgb.LGBMRegressor(
-                random_state=random_state, n_jobs=-1)))
+            estimators.append(
+                ("lgb", lgb.LGBMRegressor(random_state=random_state, n_jobs=-1))
+            )
         final_estimator = Ridge()
         ensemble = StackingRegressor(
-            estimators=estimators, final_estimator=final_estimator, n_jobs=-1, passthrough=False)
+            estimators=estimators,
+            final_estimator=final_estimator,
+            n_jobs=-1,
+            passthrough=False,
+        )
     else:
-        xgb_base = XGBClassifier(use_label_encoder=False, random_state=random_state,
-                                 n_jobs=-1, verbosity=0, **(xgb_params or {}))
+        xgb_base = XGBClassifier(
+            use_label_encoder=False,
+            random_state=random_state,
+            n_jobs=-1,
+            verbosity=0,
+            **(xgb_params or {}),
+        )
         rf_base = RandomForestClassifier(random_state=random_state, n_jobs=-1)
         # Add MLP Classifier
-        mlp_base = MLPClassifier(hidden_layer_sizes=(
-            100, 50), alpha=0.1, max_iter=1000, random_state=random_state)
+        mlp_base = MLPClassifier(
+            hidden_layer_sizes=(100, 50),
+            alpha=0.1,
+            max_iter=1000,
+            random_state=random_state,
+        )
 
         estimators.append(("xgb", xgb_base))
         estimators.append(("rf", rf_base))
         estimators.append(("mlp", mlp_base))  # Added MLP
         if LGB_AVAILABLE:
-            estimators.append(("lgb", lgb.LGBMClassifier(
-                random_state=random_state, n_jobs=-1)))
+            estimators.append(
+                ("lgb", lgb.LGBMClassifier(random_state=random_state, n_jobs=-1))
+            )
         final_estimator = LogisticRegression(max_iter=2000)
         ensemble = StackingClassifier(
-            estimators=estimators, final_estimator=final_estimator, n_jobs=-1, passthrough=False)
+            estimators=estimators,
+            final_estimator=final_estimator,
+            n_jobs=-1,
+            passthrough=False,
+        )
     return ensemble
 
 
@@ -470,8 +484,7 @@ def main():
             best_pipeline.fit(X, y)
         else:
             print("🔎 Running RandomizedSearchCV tuning...")
-            pipeline = Pipeline(
-                [("preproc", preprocessor), ("model", model_base)])
+            pipeline = Pipeline([("preproc", preprocessor), ("model", model_base)])
             param_dist = get_param_dist()
             search = RandomizedSearchCV(
                 pipeline,
