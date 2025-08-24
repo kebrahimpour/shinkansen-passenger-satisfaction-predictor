@@ -6,9 +6,7 @@ Optimized pipeline for training, tuning, and creating a submission.
 - Refit on full data and save model & submission
 """
 
-import os
 import joblib
-import json
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -19,8 +17,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.model_selection import RandomizedSearchCV, StratifiedKFold, KFold
 from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
     mean_absolute_error,
     make_scorer,
 )
@@ -34,7 +30,9 @@ MODEL_DIR = Path("models")
 MODEL_DIR.mkdir(exist_ok=True)
 
 
-def load_and_merge(train_travel_path, train_survey_path, test_travel_path, test_survey_path):
+def load_and_merge(
+    train_travel_path, train_survey_path, test_travel_path, test_survey_path
+):
     tt = pd.read_csv(train_travel_path)
     ts = pd.read_csv(train_survey_path)
     ttest = pd.read_csv(test_travel_path)
@@ -48,10 +46,8 @@ def basic_map_and_impute(train, test):
     # Impute Arrival_Delay_in_Mins with training median
     if "Arrival_Delay_in_Mins" in train.columns:
         med = train["Arrival_Delay_in_Mins"].median()
-        train["Arrival_Delay_in_Mins"] = train["Arrival_Delay_in_Mins"].fillna(
-            med)
-        test["Arrival_Delay_in_Mins"] = test["Arrival_Delay_in_Mins"].fillna(
-            med)
+        train["Arrival_Delay_in_Mins"] = train["Arrival_Delay_in_Mins"].fillna(med)
+        test["Arrival_Delay_in_Mins"] = test["Arrival_Delay_in_Mins"].fillna(med)
 
     # Map textual survey ratings -> numeric if present
     satisfaction_mapping = {
@@ -92,10 +88,8 @@ def basic_map_and_impute(train, test):
 def build_preprocessor(X: pd.DataFrame):
     numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
     # drop ID / target if present in numeric_cols
-    numeric_cols = [c for c in numeric_cols if c not in (
-        "ID", "Overall_Experience")]
-    categorical_cols = X.select_dtypes(
-        include=["object", "category"]).columns.tolist()
+    numeric_cols = [c for c in numeric_cols if c not in ("ID", "Overall_Experience")]
+    categorical_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
 
     numeric_pipeline = Pipeline(
         [
@@ -134,7 +128,8 @@ def choose_model_and_scoring(y: pd.Series):
             )
             scoring = "accuracy"
             cv = StratifiedKFold(
-                n_splits=CV_FOLDS, shuffle=True, random_state=RANDOM_STATE)
+                n_splits=CV_FOLDS, shuffle=True, random_state=RANDOM_STATE
+            )
         else:
             model = XGBClassifier(
                 objective="multi:softprob",
@@ -144,7 +139,8 @@ def choose_model_and_scoring(y: pd.Series):
             )
             scoring = "accuracy"
             cv = StratifiedKFold(
-                n_splits=CV_FOLDS, shuffle=True, random_state=RANDOM_STATE)
+                n_splits=CV_FOLDS, shuffle=True, random_state=RANDOM_STATE
+            )
     else:
         # regression fallback
         model = XGBRegressor(random_state=RANDOM_STATE, n_jobs=-1)
