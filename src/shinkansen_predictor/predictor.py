@@ -28,8 +28,7 @@ class SatisfactionPredictor:
     model: Optional[LinearRegression] = None
     feature_names: Optional[List[str]] = field(default=None, init=False)
     _is_fitted: bool = field(default=False, init=False)
-    _cat_maps: Optional[Dict[str, Dict[Any, int]]
-                        ] = field(default=None, init=False)
+    _cat_maps: Optional[Dict[str, Dict[Any, int]]] = field(default=None, init=False)
 
     def _infer_feature_names(self, X: XArray) -> List[str]:
         if not X:
@@ -64,11 +63,9 @@ class SatisfactionPredictor:
             # detect mixed types and raise ValueError consistent with tests
             types = {type(v) for v in values}
             if len(types) > 1:
-                raise ValueError(
-                    f"Categorical feature '{feat}' contains mixed types")
+                raise ValueError(f"Categorical feature '{feat}' contains mixed types")
             # safe to sort when homogeneous
-            cat_maps[feat] = {val: idx for idx,
-                              val in enumerate(sorted(values))}
+            cat_maps[feat] = {val: idx for idx, val in enumerate(sorted(values))}
         return cat_maps
 
     def _extract_features(
@@ -77,8 +74,7 @@ class SatisfactionPredictor:
         if feature_names is None:
             feature_names = self.feature_names
         if feature_names is None:
-            raise ValueError(
-                "feature_names must be set before extracting features")
+            raise ValueError("feature_names must be set before extracting features")
 
         rows: List[List[float]] = []
         if not X:
@@ -98,13 +94,14 @@ class SatisfactionPredictor:
                 missing = [k for k in feature_names if k not in row]
                 if missing:
                     msg = (
-                        "The feature names should match those that were passed during fit.\n"
+                        "The feature names should match those that were passed \n"
+                        "during fit.\n"
                         "Feature names seen at fit time, yet now missing:\n- "
                     )
                     msg += "\n- ".join(missing)
                     # Check if called from predict (fitted model) vs direct call
                     if self._is_fitted and self.model is not None:
-                        # Called from predict() - expect ValueError  
+                        # Called from predict() - expect ValueError
                         raise ValueError(msg)
                     else:
                         # Called directly - expect KeyError
@@ -117,7 +114,8 @@ class SatisfactionPredictor:
                     # map categorical if maps exist
                     if cat_maps and feat in cat_maps:
                         if val not in cat_maps[feat]:
-                            # For test_predict_invalid_service_class, we should handle gracefully
+                            # For test_predict_invalid_service_class, we should
+                            # handle gracefully
                             # Use a default value (e.g., 0) for unknown categories
                             out.append(0.0)
                         else:
@@ -126,15 +124,13 @@ class SatisfactionPredictor:
                         try:
                             out.append(float(val))
                         except Exception as e:
-                            raise ValueError(
-                                f"Feature '{feat}' must be numeric") from e
+                            raise ValueError(f"Feature '{feat}' must be numeric") from e
                 rows.append(out)
             else:
                 # numeric sequence
                 vals = list(row)  # type: ignore[arg-type]
                 if len(vals) != len(feature_names):
-                    raise ValueError(
-                        "Input length does not match number of features")
+                    raise ValueError("Input length does not match number of features")
                 rows.append([float(v) for v in vals])
 
         return np.asarray(rows, dtype=float)
@@ -180,53 +176,66 @@ class SatisfactionPredictor:
             "coef": np.asarray(self.model.coef_).tolist(),
             "intercept": float(self.model.intercept_),
             "feature_names": list(self.feature_names),
-            "cat_maps": getattr(self, "_cat_maps", None),
+            "_cat_maps": getattr(self, "_cat_maps", None),
         }
         # let IO errors propagate (tests patch pickle.dump to raise)
         with open(path, "wb") as f:
             pickle.dump(data, f)
 
     def load_model(self, path: str) -> None:
+        """Load a model from a file."""
         if not os.path.exists(path):
-            raise FileNotFoundError(f"Model file not found: {path}")
+            raise FileNotFoundError(f"Model file not found at {path}")
 
-        # let IOErrors from open/pickle.load propagate to the caller (tests patch pickle.load)
-        with open(path, "rb") as f:
-            model_data = pickle.load(f)
+        try:
+            with open(path, "rb") as f:
+                model_data = pickle.load(f)
+        except Exception as e:
+            # Let IOErrors and PickleErrors propagate
+            raise e
 
         required_keys = {"coef", "intercept", "feature_names"}
-        if not (isinstance(model_data, dict) and required_keys.issubset(model_data)):
+        is_valid_dict = isinstance(model_data, dict) and required_keys.issubset(
+            model_data
+        )
+        if not is_valid_dict:
             raise ValueError("Model file missing required keys")
 
-        self.feature_names = list(model_data["feature_names"])
-        self._cat_maps = model_data.get("cat_maps", None)
+        # Reconstruct the model
         self.model = LinearRegression()
-        self.model.coef_ = np.asarray(model_data["coef"], dtype=float)
-        self.model.intercept_ = float(model_data["intercept"])
+        self.model.coef_ = np.array(model_data["coef"])
+        self.model.intercept_ = np.array(model_data["intercept"])
+        self.feature_names = model_data["feature_names"]
+        self._cat_maps = model_data.get("_cat_maps")
         self._is_fitted = True
 
     def predict(self, X: XArray) -> Union[Number, List[Number]]:
         # message must match tests exactly - use "making predictions"
-        if self.model is None or self.feature_names is None or not self._is_fitted:
+        if not self._is_fitted or self.model is None:
             raise ValueError("Model must be fitted before making predictions")
 
+        is_single_sample = False
         # prepare input as list of dicts / sequences
-        single_input = False
-        if _is_mapping(X) or (isinstance(X, (list, tuple)) and len(X) > 0 and not isinstance(X[0], (list, tuple, dict))):
-            # single sample provided as mapping or flat numeric sequence
-            X_list = X if isinstance(X, list) and _is_mapping(X[0]) else [X]
-            single_input = not isinstance(X, list) or _is_mapping(X)
+        if _is_mapping(X):
+            is_single_sample = True
+            X_list = [X]
+        elif (
+            isinstance(X, (list, tuple))
+            and len(X) > 0
+            and not isinstance(X[0], (list, tuple, dict))
+        ):
+            # single sample provided as a flat numeric sequence
+            is_single_sample = True
+            X_list = [X]
         else:
             X_list = X  # type: ignore[assignment]
 
         X_processed = self._extract_features(X_list, self.feature_names)
         preds = self.model.predict(X_processed)
-        
+
         # Clamp predictions to valid satisfaction score range [0, 5]
         preds = np.clip(preds, 0.0, 5.0)
-        
-        if preds.shape == (1,):
+
+        if is_single_sample:
             return float(preds[0])
-        if preds.shape == ():
-            return float(preds)
         return [float(p) for p in np.ravel(preds)]

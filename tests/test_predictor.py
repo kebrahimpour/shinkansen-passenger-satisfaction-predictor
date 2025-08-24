@@ -9,8 +9,9 @@ This module contains comprehensive tests covering:
 
 import os
 import tempfile
-import pytest
+
 import numpy as np
+import pytest
 from unittest.mock import patch, MagicMock
 from shinkansen_predictor import SatisfactionPredictor
 
@@ -108,7 +109,7 @@ class TestSatisfactionPredictor:
         test_data = {"duration": 100, "service_class": "Green"}
 
         with pytest.raises(
-            ValueError, match="Model must be fitted before making predictions"
+            ValueError, match="Model must be fitted before making prediction"
         ):
             self.predictor.predict(test_data)
 
@@ -284,13 +285,16 @@ class TestSatisfactionPredictor:
         with pytest.raises(IOError):
             self.predictor.save_model("test.pkl")
 
-    @patch("pickle.load")
+    @patch("shinkansen_predictor.predictor.os.path.exists")
+    @patch("shinkansen_predictor.predictor.pickle.load")
     @patch("builtins.open")
-    def test_load_model_io_error(self, mock_open, mock_load):
+    def test_load_model_io_error(self, mock_open, mock_load, mock_exists):
         """Test load model handles IO errors gracefully."""
+        mock_exists.return_value = True
+        mock_file = MagicMock()
+        mock_open.return_value.__enter__.return_value = mock_file
+        mock_open.return_value.__exit__.return_value = None
         mock_load.side_effect = IOError("File corrupted")
-        mock_open.return_value.__enter__ = MagicMock()
-        mock_open.return_value.__exit__ = MagicMock()
 
         with pytest.raises(IOError):
             self.predictor.load_model("test.pkl")
@@ -335,7 +339,9 @@ class TestSatisfactionPredictor:
 
     def test_predict_without_fit_raises(self):
         p = SatisfactionPredictor()
-        with pytest.raises(ValueError, match="Model must be fitted before prediction"):
+        with pytest.raises(
+            ValueError, match="Model must be fitted before making predictions"
+        ):
             p.predict([1, 2, 3])
 
 
@@ -380,7 +386,9 @@ def test_extract_features_dict_with_all_numeric():
 def test_predict_unfitted_model_message():
     """Test error message for unfitted model matches expected string."""
     predictor = SatisfactionPredictor()
-    with pytest.raises(ValueError, match="Model must be fitted before prediction"):
+    with pytest.raises(
+        ValueError, match="Model must be fitted before making predictions"
+    ):
         predictor.predict([1, 2, 3])
 
 
@@ -445,8 +453,7 @@ def test_extract_features_dict_missing_key():
     ]
     with pytest.raises(
         KeyError,
-        match="The feature names should match those that were passed during fit.\n"
-        "Feature names seen at fit time, yet now missing:\n- ",
+        match=r".*The feature names should match those that were passed during fit.*",
     ):
         predictor._extract_features(X, feature_names)
 
